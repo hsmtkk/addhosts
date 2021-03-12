@@ -11,7 +11,7 @@ COPY main.go .
 
 ENV CGO_ENABLED=0
 
-RUN go build -o addhosts.bin
+RUN go build -o /opt/addhosts.bin
 
 FROM alpine:3.13.2
 
