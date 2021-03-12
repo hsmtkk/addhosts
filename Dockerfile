@@ -4,7 +4,7 @@ RUN mkdir -p /go/src/github.com/hsmtkk/addhosts
 
 WORKDIR /go/src/github.com/hsmtkk/addhosts
 
-COPY getip .
+COPY getip getip
 COPY go.mod .
 COPY go.sum .
 COPY main.go .
