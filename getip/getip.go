@@ -49,7 +49,7 @@ func getIPv4(ips []net.IP) (string, error) {
 
 func getIPv6(ips []net.IP) (string, error) {
 	for _, ip := range ips {
-		if ip.To16() != nil {
+		if ip.To4() == nil {
 			return ip.String(), nil
 		}
 	}
