@@ -1,6 +1,6 @@
 FROM golang:1.16 AS builder
 
-RUN mkdir /go/src/github.com/hsmtkk/addhosts
+RUN mkdir -p /go/src/github.com/hsmtkk/addhosts
 
 WORKDIR /go/src/github.com/hsmtkk/addhosts
 
