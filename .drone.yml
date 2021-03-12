@@ -1,0 +1,52 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: yml_lint
+    image: sdesbure/yamllint:latest
+    commands:
+      - yamllint .drone.yml
+  - name: dockerfile_lint
+    image: hadolint/hadolint:v1.23.0
+    commands:
+      - hadolint Dockerfile
+  - name: unit_test
+    image: golang:1.16
+    commands:
+      - cd getip
+      - go test
+  - name: binary_build
+    depends_on:
+      - unit_test
+    image: golang:1.16
+    environment:
+      CGO_ENABLED: 0
+    commands:
+      - go build -o addhosts.bin
+  - name: integration_test
+    depends_on:
+      - binary_build
+    image: alpine:3.13.2
+    commands:
+      - ./addhosts.bin www.google.com www.yahoo.com
+      - ./addhosts.bin www.google.com www.yahoo.com --ipv6
+  - name: docker_build
+    depends_on:
+      - dockerfile_lint
+    environment:
+      DOCKER_BUILDKIT: 1
+    image: plugins/docker:19.03.8
+    settings:
+      password:
+        from_secret: docker_hub_token
+      repo: hsmtkk/addhosts
+      username: hsmtkk
+  - name: docker_test
+    depends_on:
+      - docker_build
+    image: hsmtkk/addhosts:latest
+    commands:
+      - /opt/addhosts.bin www.google.com www.yahoo.com
+      - /opt/addhosts.bin www.google.com www.yahoo.com --ipv6
