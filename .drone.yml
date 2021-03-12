@@ -17,21 +17,47 @@ steps:
     commands:
       - cd getip
       - go test
-  - name: binary_build
+  - name: linux_build
+    image: golang:1.16
+    environment:
+      GOOS: linux
+      GOARCH: amd64
+      CGO_ENABLED: 0
+    commands:
+      - go build -o addhosts.bin
+  - name: windows_build
     depends_on:
       - unit_test
     image: golang:1.16
     environment:
+      GOOS: windows
+      GOARCH: amd64
       CGO_ENABLED: 0
     commands:
-      - go build -o addhosts.bin
+      - go build -o addhosts.exe
   - name: integration_test
     depends_on:
-      - binary_build
+      - linux_build
     image: alpine:3.13.2
     commands:
       - ./addhosts.bin www.google.com www.yahoo.com
       - ./addhosts.bin www.google.com www.yahoo.com --ipv6
+  - name: binary_release
+    depends_on:
+      - linux_build
+      - windows_build
+    image: plugins/github-release:1
+    settings:
+      api_key:
+        from_secret: git_hub_token
+      checksum:
+        - sha256
+      files:
+        - ./addhosts.bin
+        - ./addhosts.exe
+    when:
+      event:
+        - tag
   - name: docker_build
     depends_on:
       - dockerfile_lint
